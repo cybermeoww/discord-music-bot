@@ -38,26 +38,32 @@ const player = new Player(client);
 // ================= LOAD EXTRACTORS =================
 (async () => {
 
-    await player.extractors.loadMulti(DefaultExtractors);
+    try {
 
-    await player.extractors.register(YoutubeiExtractor, {
-    authentication: process.env.YT_COOKIE,
-    streamOptions: {
-        useClient: 'WEB'
+        await player.extractors.loadMulti(DefaultExtractors);
+
+        await player.extractors.register(YoutubeiExtractor, {
+            streamOptions: {
+                useClient: 'ANDROID'
+            }
+        });
+
+        console.log('✅ Extractor loaded');
+
+    } catch (err) {
+
+        console.log('❌ Extractor Error:', err);
     }
-});
-
-    console.log('Extractor loaded');
 
 })();
 
 // ================= READY =================
 client.once('clientReady', () => {
 
-    console.log(`Bot online: ${client.user.tag}`);
+    console.log(`🔥 Bot online: ${client.user.tag}`);
 });
 
-// ================= EVENTS =================
+// ================= PLAYER EVENTS =================
 player.events.on('playerStart', (queue, track) => {
 
     queue.metadata.channel.send(
@@ -72,15 +78,34 @@ player.events.on('audioTrackAdd', (queue, track) => {
     );
 });
 
+player.events.on('disconnect', (queue) => {
+
+    console.log('❌ Bot keluar voice channel');
+});
+
+player.events.on('emptyChannel', (queue) => {
+
+    console.log('📭 Voice channel kosong');
+});
+
+player.events.on('emptyQueue', (queue) => {
+
+    console.log('📃 Queue habis');
+});
+
+// ================= ERROR HANDLER =================
 player.events.on('error', (queue, error) => {
 
-    console.log('PLAYER ERROR:', error);
+    console.log('❌ PLAYER ERROR:', error);
 });
 
 player.events.on('playerError', (queue, error) => {
 
-    console.log('TRACK ERROR:', error);
+    console.log('❌ TRACK ERROR:', error);
 });
+
+process.on('unhandledRejection', console.error);
+process.on('uncaughtException', console.error);
 
 // ================= COMMAND =================
 client.on('messageCreate', async (message) => {
@@ -96,13 +121,13 @@ client.on('messageCreate', async (message) => {
         const query = args.join(' ');
 
         if (!query) {
-            return message.reply('Masukkan nama lagu atau link!');
+            return message.reply('❌ Masukkan nama lagu atau link!');
         }
 
         const voiceChannel = message.member.voice.channel;
 
         if (!voiceChannel) {
-            return message.reply('Masuk voice channel dulu!');
+            return message.reply('❌ Masuk voice channel dulu!');
         }
 
         try {
@@ -117,7 +142,7 @@ client.on('messageCreate', async (message) => {
                 }
             });
 
-            message.reply(`🔍 Mencari: ${query}`);
+            message.reply(`🔍 Mencari lagu: **${query}**`);
 
         } catch (err) {
 
@@ -133,7 +158,7 @@ client.on('messageCreate', async (message) => {
         const queue = player.nodes.get(message.guild.id);
 
         if (!queue || !queue.currentTrack) {
-            return message.reply('Tidak ada lagu');
+            return message.reply('❌ Tidak ada lagu');
         }
 
         queue.node.skip();
@@ -147,7 +172,7 @@ client.on('messageCreate', async (message) => {
         const queue = player.nodes.get(message.guild.id);
 
         if (!queue) {
-            return message.reply('Tidak ada lagu');
+            return message.reply('❌ Tidak ada lagu');
         }
 
         queue.delete();
@@ -161,7 +186,7 @@ client.on('messageCreate', async (message) => {
         const queue = player.nodes.get(message.guild.id);
 
         if (!queue) {
-            return message.reply('Tidak ada lagu');
+            return message.reply('❌ Tidak ada lagu');
         }
 
         queue.node.pause();
@@ -175,7 +200,7 @@ client.on('messageCreate', async (message) => {
         const queue = player.nodes.get(message.guild.id);
 
         if (!queue) {
-            return message.reply('Tidak ada lagu');
+            return message.reply('❌ Tidak ada lagu');
         }
 
         queue.node.resume();
@@ -189,7 +214,7 @@ client.on('messageCreate', async (message) => {
         const queue = player.nodes.get(message.guild.id);
 
         if (!queue) {
-            return message.reply('Tidak ada lagu');
+            return message.reply('❌ Tidak ada lagu');
         }
 
         queue.setRepeatMode(QueueRepeatMode.AUTOPLAY);
@@ -203,7 +228,7 @@ client.on('messageCreate', async (message) => {
         const queue = player.nodes.get(message.guild.id);
 
         if (!queue) {
-            return message.reply('Tidak ada lagu');
+            return message.reply('❌ Tidak ada lagu');
         }
 
         queue.setRepeatMode(QueueRepeatMode.OFF);
