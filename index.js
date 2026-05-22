@@ -14,6 +14,10 @@ const {
     DefaultExtractors
 } = require('@discord-player/extractor');
 
+const {
+    YoutubeiExtractor
+} = require('discord-player-youtubei');
+
 // ================= CLIENT =================
 const client = new Client({
     intents: [
@@ -34,6 +38,12 @@ const player = new Player(client);
 (async () => {
 
     await player.extractors.loadMulti(DefaultExtractors);
+
+    await player.extractors.register(YoutubeiExtractor, {
+        streamOptions: {
+            useClient: 'ANDROID'
+        }
+    });
 
 })();
 
