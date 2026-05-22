@@ -22,7 +22,7 @@ const client = new Client({
 });
 
 // ================= TOKEN =================
-const TOKEN = 'MTUwNzI4NTA0NjUxODc0MzA1MA.GIEnxk.tmJLdMqgeaE-vcabp6acFQ9_ruvkqBIm733UPQ';
+const TOKEN = process.env.TOKEN;
 
 // ================= PLAYER =================
 const player = new Player(client);
