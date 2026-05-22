@@ -41,10 +41,11 @@ const player = new Player(client);
     await player.extractors.loadMulti(DefaultExtractors);
 
     await player.extractors.register(YoutubeiExtractor, {
-        streamOptions: {
-            useClient: 'ANDROID'
-        }
-    });
+    authentication: process.env.YT_COOKIE,
+    streamOptions: {
+        useClient: 'WEB'
+    }
+});
 
     console.log('Extractor loaded');
 
