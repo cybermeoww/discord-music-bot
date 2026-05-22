@@ -7,7 +7,8 @@ const {
 } = require('discord.js');
 
 const {
-    Player
+    Player,
+    QueueRepeatMode
 } = require('discord-player');
 
 const {
@@ -45,6 +46,8 @@ const player = new Player(client);
         }
     });
 
+    console.log('Extractor loaded');
+
 })();
 
 // ================= READY =================
@@ -53,16 +56,43 @@ client.once('clientReady', () => {
     console.log(`Bot online: ${client.user.tag}`);
 });
 
+// ================= EVENTS =================
+player.events.on('playerStart', (queue, track) => {
+
+    queue.metadata.channel.send(
+        `🎶 Sedang diputar: **${track.title}**`
+    );
+});
+
+player.events.on('audioTrackAdd', (queue, track) => {
+
+    queue.metadata.channel.send(
+        `➕ Lagu ditambahkan: **${track.title}**`
+    );
+});
+
+player.events.on('error', (queue, error) => {
+
+    console.log('PLAYER ERROR:', error);
+});
+
+player.events.on('playerError', (queue, error) => {
+
+    console.log('TRACK ERROR:', error);
+});
+
 // ================= COMMAND =================
 client.on('messageCreate', async (message) => {
 
     if (message.author.bot) return;
 
-    // ================= PLAY =================
-    if (message.content.startsWith('!play')) {
+    const args = message.content.split(' ');
+    const command = args.shift().toLowerCase();
 
-        const args = message.content.split(' ');
-        const query = args.slice(1).join(' ');
+    // ================= PLAY =================
+    if (command === '!play') {
+
+        const query = args.join(' ');
 
         if (!query) {
             return message.reply('Masukkan nama lagu atau link!');
@@ -80,12 +110,13 @@ client.on('messageCreate', async (message) => {
                 nodeOptions: {
                     metadata: message,
                     volume: 80,
+                    leaveOnEmpty: false,
                     leaveOnEnd: false,
                     leaveOnStop: false
                 }
             });
 
-            message.reply(`🎵 Memutar: ${query}`);
+            message.reply(`🔍 Mencari: ${query}`);
 
         } catch (err) {
 
@@ -95,22 +126,8 @@ client.on('messageCreate', async (message) => {
         }
     }
 
-    // ================= STOP =================
-    if (message.content === '!stop') {
-
-        const queue = player.nodes.get(message.guild.id);
-
-        if (!queue) {
-            return message.reply('Tidak ada lagu yang diputar');
-        }
-
-        queue.delete();
-
-        message.reply('⏹️ Musik dihentikan');
-    }
-
     // ================= SKIP =================
-    if (message.content === '!skip') {
+    if (command === '!skip') {
 
         const queue = player.nodes.get(message.guild.id);
 
@@ -123,8 +140,22 @@ client.on('messageCreate', async (message) => {
         message.reply('⏭️ Lagu diskip');
     }
 
+    // ================= STOP =================
+    if (command === '!stop') {
+
+        const queue = player.nodes.get(message.guild.id);
+
+        if (!queue) {
+            return message.reply('Tidak ada lagu');
+        }
+
+        queue.delete();
+
+        message.reply('⏹️ Musik dihentikan');
+    }
+
     // ================= PAUSE =================
-    if (message.content === '!pause') {
+    if (command === '!pause') {
 
         const queue = player.nodes.get(message.guild.id);
 
@@ -138,7 +169,7 @@ client.on('messageCreate', async (message) => {
     }
 
     // ================= RESUME =================
-    if (message.content === '!resume') {
+    if (command === '!resume') {
 
         const queue = player.nodes.get(message.guild.id);
 
@@ -152,7 +183,7 @@ client.on('messageCreate', async (message) => {
     }
 
     // ================= AUTOPLAY ON =================
-    if (message.content === '!autoplay on') {
+    if (command === '!autoplay') {
 
         const queue = player.nodes.get(message.guild.id);
 
@@ -160,13 +191,13 @@ client.on('messageCreate', async (message) => {
             return message.reply('Tidak ada lagu');
         }
 
-        queue.setRepeatMode(3);
+        queue.setRepeatMode(QueueRepeatMode.AUTOPLAY);
 
         message.reply('🔁 Autoplay aktif');
     }
 
     // ================= AUTOPLAY OFF =================
-    if (message.content === '!autoplay off') {
+    if (command === '!autoplayoff') {
 
         const queue = player.nodes.get(message.guild.id);
 
@@ -174,18 +205,10 @@ client.on('messageCreate', async (message) => {
             return message.reply('Tidak ada lagu');
         }
 
-        queue.setRepeatMode(0);
+        queue.setRepeatMode(QueueRepeatMode.OFF);
 
         message.reply('❌ Autoplay dimatikan');
     }
-});
-
-// ================= PLAYER EVENTS =================
-player.events.on('playerStart', (queue, track) => {
-
-    queue.metadata.channel.send(
-        `🎶 Sedang diputar: **${track.title}**`
-    );
 });
 
 // ================= LOGIN =================
