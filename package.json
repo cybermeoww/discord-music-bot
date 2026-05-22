@@ -24,6 +24,7 @@
     "opusscript": "^0.0.8",
     "play-dl": "^1.9.7",
     "youtube-dl-exec": "^3.1.7",
-    "youtubei.js": "^17.0.1"
+    "youtubei.js": "^17.0.1",
+    "yt-dlp-wrap": "^2.3.12"
   }
 }
